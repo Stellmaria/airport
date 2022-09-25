@@ -10,24 +10,8 @@ import com.academy.airport.dao.impl.RouteDao;
 import com.academy.airport.dao.impl.SeatDao;
 import com.academy.airport.dao.impl.TicketDao;
 import com.academy.airport.dao.impl.UserDao;
-import com.academy.airport.entity.airport.Aircompany;
-import com.academy.airport.entity.airport.Airplane;
-import com.academy.airport.entity.airport.Airport;
-import com.academy.airport.entity.airport.Seat;
 import com.academy.airport.entity.route.City;
 import com.academy.airport.entity.route.Country;
-import com.academy.airport.entity.route.FlightStatus;
-import com.academy.airport.entity.route.Route;
-import com.academy.airport.entity.ticket.Ticket;
-import com.academy.airport.entity.user.Gender;
-import com.academy.airport.entity.user.Login;
-import com.academy.airport.entity.user.Role;
-import com.academy.airport.entity.user.User;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static java.lang.System.*;
 
@@ -193,5 +177,18 @@ public class Main {
 //        });
 //        out.println(airportOptional);
 //        out.println(airportDao.findAll());
+
+//        out.println(cityDao.findAll());
+//        var cityOptional = cityDao.findById(1);
+//        out.println(cityOptional);
+//        cityOptional.ifPresent(city -> {
+//            city.setCountry(Country.builder()
+//                    .id(1)
+//                    .build());
+//            city.setName("Minsk-1");
+//            cityDao.update(city);
+//        });
+//        out.println(cityOptional);
+//        out.println(cityDao.findAll());
     }
 }

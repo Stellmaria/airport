@@ -1,13 +1,18 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
+import com.academy.airport.entity.airport.Aircompany;
+import com.academy.airport.entity.airport.Airplane;
 import com.academy.airport.entity.route.City;
+import com.academy.airport.entity.route.Country;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +29,15 @@ public class CityDao implements Dao<Integer, City> {
     @Language("PostgreSQL")
     private static final String SAVE_SQL = "INSERT INTO airport_storage.city(country_id, name) "
             + "VALUES (?, ?);";
+    @Language("PostgreSQL")
+    private static final String UPDATE_SQL = "UPDATE airport_storage.city "
+            + "SET country_id = ?, name = ? "
+            + "WHERE id = ?;";
+    @Language("PostgreSQL")
+    private static final String FIND_ALL_SQL = "SELECT id, country_id, name "
+            + "FROM airport_storage.city ";
+    @Language("PostgreSQL")
+    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + "WHERE id = ?;";
 
     @Override
     @SneakyThrows
@@ -44,8 +58,17 @@ public class CityDao implements Dao<Integer, City> {
     }
 
     @Override
-    public void update(final City entity) {
+    @SneakyThrows
+    public void update(final @NotNull City entity) {
+        try (var connection = ConnectionManager.get();
+             var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
+            prepareStatement.setObject(1, entity.getCountry().getId());
+            prepareStatement.setObject(2, entity.getName());
+            prepareStatement.setObject(3, entity.getId());
 
+
+            prepareStatement.executeUpdate();
+        }
     }
 
     @Override
@@ -61,13 +84,43 @@ public class CityDao implements Dao<Integer, City> {
     @Override
     @SneakyThrows
     public Optional<City> findById(final Integer id) {
-        return Optional.empty();
+        try (var connection = ConnectionManager.get();
+             var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+            prepareStatement.setObject(1, id);
+
+            var resultSet = prepareStatement.executeQuery();
+            City city = null;
+            if (resultSet.next()) {
+                city = buildCity(resultSet);
+            }
+            return Optional.ofNullable(city);
+        }
     }
 
     @Override
     @SneakyThrows
     public List<City> findAll() {
-        return null;
+        try (var connection = ConnectionManager.get();
+             var prepareStatement = connection.prepareStatement(FIND_ALL_SQL)) {
+            var resultSet = prepareStatement.executeQuery();
+
+            List<City> cities = new ArrayList<>();
+            while (resultSet.next()) {
+                cities.add(buildCity(resultSet));
+            }
+            return cities;
+        }
+    }
+
+    @SneakyThrows
+    private City buildCity(@NotNull ResultSet resultSet) {
+        return City.builder()
+                .id(resultSet.getObject("id", Integer.class))
+                .country(Country.builder()
+                        .id(resultSet.getObject("country_id", Integer.class))
+                        .build())
+                .name(resultSet.getObject("name", String.class))
+                .build();
     }
 
     public static CityDao getInstance() {
