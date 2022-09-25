@@ -2,13 +2,12 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.airport.Seat;
-import com.academy.airport.exception.DaoException;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +36,7 @@ public class SeatDao implements Dao<Integer, Seat> {
             + "WHERE airplane_id = ?;";
 
     @Override
+    @SneakyThrows
     public Seat save(final @NotNull Seat entity) {
         try (var connection = ConnectionManager.get();
              var savePrepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS);
@@ -57,36 +57,36 @@ public class SeatDao implements Dao<Integer, Seat> {
 
             var generatedKeys = savePrepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setSeatNo(generatedKeys.getString(columLabel));
+                entity.setSeatNo(generatedKeys.getObject(columLabel, String.class));
             }
             return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public void update(final Seat entity) {
 
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(final Integer id) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
-            prepareStatement.setInt(1, id);
+            prepareStatement.setObject(1, id);
             return prepareStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<Seat> findById(final Integer id) {
         return Optional.empty();
     }
 
     @Override
+    @SneakyThrows
     public List<Seat> findAll() {
         return null;
     }

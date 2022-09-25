@@ -2,14 +2,12 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.route.City;
-import com.academy.airport.exception.DaoException;
 import com.academy.airport.util.ConnectionManager;
-import com.academy.airport.util.SqlHelper;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,10 +18,15 @@ import static lombok.AccessLevel.PRIVATE;
 public class CityDao implements Dao<Integer, City> {
     private static final CityDao INSTANCE = new CityDao();
     @Language("PostgreSQL")
+    private static final String DELETE_SQL = "DELETE "
+            + "FROM airport_storage.city "
+            + "WHERE id = ?;";
+    @Language("PostgreSQL")
     private static final String SAVE_SQL = "INSERT INTO airport_storage.city(country_id, name) "
             + "VALUES (?, ?);";
 
     @Override
+    @SneakyThrows
     public City save(final @NotNull City entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
@@ -34,11 +37,9 @@ public class CityDao implements Dao<Integer, City> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getInt("id"));
+                entity.setId(generatedKeys.getObject("id", Integer.class));
             }
             return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
@@ -48,22 +49,23 @@ public class CityDao implements Dao<Integer, City> {
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(final Integer id) {
         try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(SqlHelper.getDeleteSql("city"))) {
-            prepareStatement.setInt(1, id);
+             var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
+            prepareStatement.setObject(1, id);
             return prepareStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<City> findById(final Integer id) {
         return Optional.empty();
     }
 
     @Override
+    @SneakyThrows
     public List<City> findAll() {
         return null;
     }

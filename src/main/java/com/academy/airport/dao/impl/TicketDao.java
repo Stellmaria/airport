@@ -2,13 +2,12 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.ticket.Ticket;
-import com.academy.airport.exception.DaoException;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
@@ -19,12 +18,14 @@ import static lombok.AccessLevel.PRIVATE;
 public class TicketDao implements Dao<Long, Ticket> {
     private static final TicketDao INSTANCE = new TicketDao();
     @Language("PostgreSQL")
-    private static final String DELETE_SQL = "DELETE FROM airport_storage.ticket"
-            + " WHERE id = ?;";
+    private static final String DELETE_SQL = "DELETE "
+            + "FROM airport_storage.ticket "
+            + "WHERE id = ?;";
     private static final String SAVE_SQL = "INSERT INTO airport_storage.ticket(user_id, route_id, seat_no, cost)"
             + " VALUES (?, ?, ?, ?);";
 
     @Override
+    @SneakyThrows
     public Ticket save(final @NotNull Ticket entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -37,36 +38,36 @@ public class TicketDao implements Dao<Long, Ticket> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getInt("id"));
+                entity.setId(generatedKeys.getObject("id", Integer.class));
             }
             return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public void update(final Ticket entity) {
 
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(final Long id) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
-            prepareStatement.setLong(1, id);
+            prepareStatement.setObject(1, id);
             return prepareStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<Ticket> findById(final Long id) {
         return Optional.empty();
     }
 
     @Override
+    @SneakyThrows
     public List<Ticket> findAll() {
         return null;
     }

@@ -127,3 +127,8 @@ CREATE TABLE login
 -- FROM airplane
 --          CROSS JOIN (VALUES ('A1'), ('A2'), ('B1'), ('B2'), ('C1'), ('C2'), ('D1'), ('D2') ORDER BY 1) s
 -- WHERE aircompany_id = 2;
+
+UPDATE airport
+SET code    ='MIK',
+    city_id = 1
+WHERE code = 'MNK';

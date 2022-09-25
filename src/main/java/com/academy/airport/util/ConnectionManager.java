@@ -1,13 +1,12 @@
 package com.academy.airport.util;
 
-import com.academy.airport.exception.ConnectionException;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -27,22 +26,15 @@ public class ConnectionManager {
         initConnectionPoll();
     }
 
+    @SneakyThrows
     public static @NotNull Connection get() {
-        try {
-            return pool.take();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ConnectionException(e);
-        }
+        return pool.take();
     }
 
+    @SneakyThrows
     public static void close() {
-        try {
-            for (Connection connection : sourceConnection) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            throw new ConnectionException(e);
+        for (Connection connection : sourceConnection) {
+            connection.close();
         }
     }
 
@@ -66,14 +58,11 @@ public class ConnectionManager {
         }
     }
 
+    @SneakyThrows
     private static Connection open() {
-        try {
-            return DriverManager.getConnection(
-                    PropertiesUtil.get(URL_KEY),
-                    PropertiesUtil.get(USERNAME_KEY),
-                    PropertiesUtil.get(PASSWORD_KEY));
-        } catch (SQLException e) {
-            throw new ConnectionException(e);
-        }
+        return DriverManager.getConnection(
+                PropertiesUtil.get(URL_KEY),
+                PropertiesUtil.get(USERNAME_KEY),
+                PropertiesUtil.get(PASSWORD_KEY));
     }
 }

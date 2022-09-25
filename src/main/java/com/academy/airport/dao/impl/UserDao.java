@@ -2,13 +2,12 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.user.User;
-import com.academy.airport.exception.DaoException;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +18,9 @@ import static lombok.AccessLevel.PRIVATE;
 public class UserDao implements Dao<Integer, User> {
     private static final UserDao INSTANCE = new UserDao();
     @Language("PostgreSQL")
-    private static final String DELETE_SQL = "DELETE FROM airport_storage.users"
-            + " WHERE id = ?;";
+    private static final String DELETE_SQL = "DELETE "
+            + "FROM airport_storage.users "
+            + "WHERE id = ?;";
     @Language("PostgreSQL")
     private static final String SAVE_SQL = "INSERT INTO airport_storage.users(first_name, last_name, passport_no,"
             + " birthday, email, role, gender)"
@@ -37,6 +37,7 @@ public class UserDao implements Dao<Integer, User> {
     private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + "WHERE id = ?;";
 
     @Override
+    @SneakyThrows
     public User save(final @NotNull User entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
@@ -52,15 +53,14 @@ public class UserDao implements Dao<Integer, User> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getInt("id"));
+                entity.setId(generatedKeys.getObject("id", Integer.class));
             }
             return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public void update(final @NotNull User entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
@@ -74,28 +74,27 @@ public class UserDao implements Dao<Integer, User> {
             prepareStatement.setObject(8, entity.getId());
 
             prepareStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(final Integer id) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
-            prepareStatement.setInt(1, id);
+            prepareStatement.setObject(1, id);
             return prepareStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<User> findById(final Integer id) {
         return Optional.empty();
     }
 
     @Override
+    @SneakyThrows
     public List<User> findAll() {
         return null;
     }

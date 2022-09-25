@@ -2,13 +2,12 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.route.Route;
-import com.academy.airport.exception.DaoException;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +27,7 @@ public class RouteDao implements Dao<Long, Route> {
             + "VALUES (?, ?, ?, ?, ?, ?);";
 
     @Override
+    @SneakyThrows
     public Route save(final @NotNull Route entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
@@ -42,36 +42,36 @@ public class RouteDao implements Dao<Long, Route> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getLong("id"));
+                entity.setId(generatedKeys.getObject("id", Long.class));
             }
             return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public void update(final Route entity) {
 
     }
 
     @Override
+    @SneakyThrows
     public boolean delete(final Long id) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
-            prepareStatement.setLong(1, id);
+            prepareStatement.setObject(1, id);
             return prepareStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DaoException(e);
         }
     }
 
     @Override
+    @SneakyThrows
     public Optional<Route> findById(final Long id) {
         return Optional.empty();
     }
 
     @Override
+    @SneakyThrows
     public List<Route> findAll() {
         return null;
     }

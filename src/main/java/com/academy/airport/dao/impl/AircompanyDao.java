@@ -3,7 +3,6 @@ package com.academy.airport.dao.impl;
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.airport.Aircompany;
 import com.academy.airport.util.ConnectionManager;
-import com.academy.airport.util.SqlHelper;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
@@ -20,6 +19,10 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class AircompanyDao implements Dao<Integer, Aircompany> {
     private static final AircompanyDao INSTANCE = new AircompanyDao();
+    @Language("PostgreSQL")
+    private static final String DELETE_SQL = "DELETE "
+            + "FROM airport_storage.aircompany "
+            + "WHERE id = ?;";
     @Language("PostgreSQL")
     private static final String SAVE_SQL = "INSERT INTO airport_storage.aircompany(name) "
             + "VALUES (?);";
@@ -44,7 +47,7 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getInt("id"));
+                entity.setId(generatedKeys.getObject("id", Integer.class));
             }
             return entity;
         }
@@ -66,9 +69,8 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
     @SneakyThrows
     public boolean delete(final Integer id) {
         try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(
-                     SqlHelper.getDeleteSql("aircompany"))) {
-            prepareStatement.setInt(1, id);
+             var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
+            prepareStatement.setObject(1, id);
 
             return prepareStatement.executeUpdate() > 0;
         }
@@ -79,7 +81,7 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
     public Optional<Aircompany> findById(final Integer id) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-            prepareStatement.setInt(1, id);
+            prepareStatement.setObject(1, id);
 
             var resultSet = prepareStatement.executeQuery();
             Aircompany aircompany = null;
@@ -105,15 +107,15 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
         }
     }
 
-    public static AircompanyDao getInstance() {
-        return INSTANCE;
-    }
-
     @SneakyThrows
     private Aircompany buildAircompany(@NotNull ResultSet resultSet) {
         return Aircompany.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
+                .id(resultSet.getObject("id", Integer.class))
+                .name(resultSet.getObject("name", String.class))
                 .build();
+    }
+
+    public static AircompanyDao getInstance() {
+        return INSTANCE;
     }
 }

@@ -171,5 +171,27 @@ public class Main {
 //        });
 //        out.println(optionalAircompany);
 //        out.println(aircompanyDao.findAll());
+//
+//        out.println(airplaneDao.findAll());
+//        var airplaneOptional = airplaneDao.findById(1);
+//        out.println(airplaneOptional);
+//        airplaneOptional.ifPresent(airplane -> {
+//            airplane.setModel("Boeing-73");
+//            airplaneDao.update(airplane);
+//        });
+//        out.println(airplaneOptional);
+//        out.println(airplaneDao.findAll());
+
+//        out.println(airportDao.findAll());
+//        var airportOptional = airportDao.findById("MNK");
+//        out.println(airportOptional);
+//        airportOptional.ifPresent(airport -> {
+//            airport.setCity(City.builder()
+//                    .id(2)
+//                    .build());
+//            airportDao.update(airport);
+//        });
+//        out.println(airportOptional);
+//        out.println(airportDao.findAll());
     }
 }
