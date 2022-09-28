@@ -10,6 +10,7 @@ import com.academy.airport.dao.impl.RouteDao;
 import com.academy.airport.dao.impl.SeatDao;
 import com.academy.airport.dao.impl.TicketDao;
 import com.academy.airport.dao.impl.UserDao;
+import com.academy.airport.entity.airport.Airplane;
 import com.academy.airport.entity.route.City;
 import com.academy.airport.entity.route.Country;
 
@@ -178,6 +179,19 @@ public class Main {
 //        out.println(airportOptional);
 //        out.println(airportDao.findAll());
 
+        out.println(seatDao.findAll());
+        var seatOptional = seatDao.findById(Airplane.builder()
+                .id(1)
+                .build()
+                .getId());
+        out.println(seatOptional);
+        seatOptional.ifPresent(seat -> {
+            seat.setSeatNo("A3");
+            seatDao.update(seat);
+        });
+        out.println(seatOptional);
+        out.println(seatDao.findAll());
+
 //        out.println(cityDao.findAll());
 //        var cityOptional = cityDao.findById(1);
 //        out.println(cityOptional);
@@ -190,5 +204,7 @@ public class Main {
 //        });
 //        out.println(cityOptional);
 //        out.println(cityDao.findAll());
+
+
     }
 }

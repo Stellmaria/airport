@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +64,11 @@ public class LoginDao implements Dao<Integer, Login> {
     @Override
     @SneakyThrows
     public Optional<Login> findById(final Integer id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Login> findById(Integer id, Connection connection) {
         return Optional.empty();
     }
 

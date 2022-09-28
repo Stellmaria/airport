@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,21 +21,26 @@ import static lombok.AccessLevel.PRIVATE;
 public class AircompanyDao implements Dao<Integer, Aircompany> {
     private static final AircompanyDao INSTANCE = new AircompanyDao();
     @Language("PostgreSQL")
-    private static final String DELETE_SQL = "DELETE "
-            + "FROM airport_storage.aircompany "
-            + "WHERE id = ?;";
+    private static final String DELETE_SQL = """
+            DELETE
+            FROM airport_storage.aircompany
+            WHERE id = ?;""";
     @Language("PostgreSQL")
-    private static final String SAVE_SQL = "INSERT INTO airport_storage.aircompany(name) "
-            + "VALUES (?);";
+    private static final String SAVE_SQL = """
+            INSERT INTO airport_storage.aircompany(name)
+            VALUES (?);""";
     @Language("PostgreSQL")
-    private static final String UPDATE_SQL = "UPDATE airport_storage.aircompany "
-            + "SET name = ? "
-            + "WHERE id = ?;";
+    private static final String UPDATE_SQL = """
+            UPDATE airport_storage.aircompany
+            SET name = ?
+            WHERE id = ?;""";
     @Language("PostgreSQL")
-    private static final String FIND_ALL_SQL = "SELECT id, name "
-            + "FROM airport_storage.aircompany ";
+    private static final String FIND_ALL_SQL = """
+            SELECT id,
+                   name
+            FROM airport_storage.aircompany""";
     @Language("PostgreSQL")
-    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + "WHERE id = ?;";
+    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE id = ?;";
 
     @Override
     @SneakyThrows
@@ -42,9 +48,7 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
             prepareStatement.setObject(1, entity.getName());
-
             prepareStatement.executeUpdate();
-
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 entity.setId(generatedKeys.getObject("id", Integer.class));
@@ -60,7 +64,6 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
              var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
             prepareStatement.setObject(1, entity.getName());
             prepareStatement.setObject(2, entity.getId());
-
             prepareStatement.executeUpdate();
         }
     }
@@ -71,18 +74,15 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
             prepareStatement.setObject(1, id);
-
             return prepareStatement.executeUpdate() > 0;
         }
     }
 
     @Override
     @SneakyThrows
-    public Optional<Aircompany> findById(final Integer id) {
-        try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+    public Optional<Aircompany> findById(Integer id, Connection connection) {
+        try (var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
             prepareStatement.setObject(1, id);
-
             var resultSet = prepareStatement.executeQuery();
             Aircompany aircompany = null;
             if (resultSet.next()) {
@@ -94,11 +94,19 @@ public class AircompanyDao implements Dao<Integer, Aircompany> {
 
     @Override
     @SneakyThrows
+    public Optional<Aircompany> findById(final Integer id) {
+        try (var connection = ConnectionManager.get()) {
+            return findById(id, connection);
+        }
+    }
+
+
+    @Override
+    @SneakyThrows
     public List<Aircompany> findAll() {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(FIND_ALL_SQL)) {
             var resultSet = prepareStatement.executeQuery();
-
             List<Aircompany> aircompanyList = new ArrayList<>();
             while (resultSet.next()) {
                 aircompanyList.add(buildAircompany(resultSet));

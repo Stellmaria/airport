@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +62,11 @@ public class CountryDao implements Dao<Integer, Country> {
     @Override
     @SneakyThrows
     public Optional<Country> findById(final Integer id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Country> findById(Integer id, Connection connection) {
         return Optional.empty();
     }
 

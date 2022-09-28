@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +68,11 @@ public class RouteDao implements Dao<Long, Route> {
     @Override
     @SneakyThrows
     public Optional<Route> findById(final Long id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Route> findById(Long id, Connection connection) {
         return Optional.empty();
     }
 

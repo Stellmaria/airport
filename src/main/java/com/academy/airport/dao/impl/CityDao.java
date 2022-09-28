@@ -1,8 +1,6 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.airport.Aircompany;
-import com.academy.airport.entity.airport.Airplane;
 import com.academy.airport.entity.route.City;
 import com.academy.airport.entity.route.Country;
 import com.academy.airport.util.ConnectionManager;
@@ -11,6 +9,7 @@ import lombok.SneakyThrows;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,9 +82,8 @@ public class CityDao implements Dao<Integer, City> {
 
     @Override
     @SneakyThrows
-    public Optional<City> findById(final Integer id) {
-        try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+    public Optional<City> findById(Integer id, Connection connection) {
+        try (var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
             prepareStatement.setObject(1, id);
 
             var resultSet = prepareStatement.executeQuery();
@@ -96,6 +94,15 @@ public class CityDao implements Dao<Integer, City> {
             return Optional.ofNullable(city);
         }
     }
+
+    @Override
+    @SneakyThrows
+    public Optional<City> findById(final Integer id) {
+        try (var connection = ConnectionManager.get()) {
+            return findById(id, connection);
+        }
+    }
+
 
     @Override
     @SneakyThrows
