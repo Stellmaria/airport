@@ -82,38 +82,38 @@ CREATE TABLE login
     password VARCHAR(32)               NOT NULL
 );
 
--- INSERT INTO users(first_name, last_name, passport_no, birthday, email, role, gender)
--- VALUES ('Иван', 'Иванов', 'QO2300', '2000-01-01', 'ivanivanov@gmail.com', 'user', 'male');
---
--- INSERT INTO login(user_id, login, password)
--- VALUES (1, 'ivan', '123');
---
--- INSERT INTO aircompany(name)
--- VALUES ('Belavia');
---
--- INSERT into airplane(model, aircompany_id)
--- VALUES ('Boeing-737', 1);
---
--- INSERT INTO country(name)
--- VALUES ('Belarus'),
---        ('Great Britain');
---
--- INSERT INTO city(country_id, name)
--- VALUES (1, 'Minsk'),
---        (2, 'London');
---
--- INSERT INTO airport(code, city_id)
--- VALUES ('MNK', 1),
---        ('LDN', 2);
---
--- INSERT into route(departure_date, departure_airport_code, arrival_date, arrival_airport_code, airplane_id, status)
--- VALUES ('24-09-2022T18:00', 'MNK',
---         '25-09-2022T00:00', 'LDN', 1, 'ARRIVED');
---
--- INSERT INTO seat (airplane_id, seat_no)
--- SELECT id, s.column1
--- FROM airplane
---          CROSS JOIN (VALUES ('A1'), ('A2'), ('B1'), ('B2'), ('C1'), ('C2'), ('D1'), ('D2') ORDER BY 1) s;
---
--- INSERT into ticket(user_id, route_id, seat_no, cost)
--- VALUES (1, 1, 'A1', 200.00);
+INSERT INTO users(first_name, last_name, passport_no, birthday, email, role, gender)
+VALUES ('Иван', 'Иванов', 'QO2300', '2000-01-01', 'ivanivanov@gmail.com', 'user', 'male');
+
+INSERT INTO login(user_id, login, password)
+VALUES (1, 'ivan', '123');
+
+INSERT INTO aircompany(name)
+VALUES ('Belavia');
+
+INSERT into airplane(model, aircompany_id)
+VALUES ('Boeing-737', 1);
+
+INSERT INTO country(name)
+VALUES ('Belarus'),
+       ('Great Britain');
+
+INSERT INTO city(country_id, name)
+VALUES (1, 'Minsk'),
+       (2, 'London');
+
+INSERT INTO airport(code, city_id)
+VALUES ('MNK', 1),
+       ('LDN', 2);
+
+INSERT into route(departure_date, departure_airport_code, arrival_date, arrival_airport_code, airplane_id, status)
+VALUES ('24-09-2022T18:00', 'MNK',
+        '25-09-2022T00:00', 'LDN', 1, 'ARRIVED');
+
+INSERT INTO seat (airplane_id, seat_no)
+SELECT id, s.column1
+FROM airplane
+         CROSS JOIN (VALUES ('A1'), ('A2'), ('B1'), ('B2'), ('C1'), ('C2'), ('D1'), ('D2') ORDER BY 1) s;
+
+INSERT into ticket(user_id, route_id, seat_no, cost)
+VALUES (1, 1, 'A1', 200.00);

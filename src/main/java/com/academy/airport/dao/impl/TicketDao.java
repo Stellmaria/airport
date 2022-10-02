@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.ticket.Ticket;
+import com.academy.airport.entity.Ticket;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -30,8 +30,8 @@ public class TicketDao implements Dao<Long, Ticket> {
     public Ticket save(final @NotNull Ticket entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            prepareStatement.setObject(1, entity.getUser().getId());
-            prepareStatement.setObject(2, entity.getRoute().getId());
+            prepareStatement.setObject(1, entity.getUserId());
+            prepareStatement.setObject(2, entity.getRouteId());
             prepareStatement.setObject(3, entity.getSeatNo());
             prepareStatement.setObject(4, entity.getCost());
 
@@ -39,7 +39,7 @@ public class TicketDao implements Dao<Long, Ticket> {
 
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                entity.setId(generatedKeys.getObject("id", Integer.class));
+                entity.setId(generatedKeys.getObject("id", Long.class));
             }
             return entity;
         }

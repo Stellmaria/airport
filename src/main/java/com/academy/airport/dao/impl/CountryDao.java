@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.route.Country;
+import com.academy.airport.entity.Country;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;

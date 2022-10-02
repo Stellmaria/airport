@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.user.User;
+import com.academy.airport.entity.User;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -47,8 +47,8 @@ public class UserDao implements Dao<Integer, User> {
             prepareStatement.setObject(3, entity.getPassportNo());
             prepareStatement.setObject(4, entity.getBirthday());
             prepareStatement.setObject(5, entity.getEmail());
-            prepareStatement.setObject(6, entity.getRole().name().toLowerCase());
-            prepareStatement.setObject(7, entity.getGender().name().toLowerCase());
+            prepareStatement.setObject(6, entity.getRole());
+            prepareStatement.setObject(7, entity.getGender());
 
             prepareStatement.executeUpdate();
 

@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.route.Route;
+import com.academy.airport.entity.Route;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -33,11 +33,11 @@ public class RouteDao implements Dao<Long, Route> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
             prepareStatement.setObject(1, entity.getDepartureDate());
-            prepareStatement.setObject(2, entity.getDepartureAirportCode().getCode().toUpperCase());
+            prepareStatement.setObject(2, entity.getDepartureAirportCode());
             prepareStatement.setObject(3, entity.getArrivalDate());
-            prepareStatement.setObject(4, entity.getArrivalAirportCode().getCode().toUpperCase());
-            prepareStatement.setObject(5, entity.getAirplane().getId());
-            prepareStatement.setObject(6, entity.getStatus().name().toUpperCase());
+            prepareStatement.setObject(4, entity.getArrivalAirportCode());
+            prepareStatement.setObject(5, entity.getAirplaneId());
+            prepareStatement.setObject(6, entity.getStatus());
 
             prepareStatement.executeUpdate();
 

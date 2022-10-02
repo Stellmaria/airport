@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.user.Login;
+import com.academy.airport.entity.Login;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -31,7 +31,7 @@ public class LoginDao implements Dao<Integer, Login> {
     public Login save(final @NotNull Login entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
-            prepareStatement.setObject(1, entity.getUser().getId());
+            prepareStatement.setObject(1, entity.getUserId());
             prepareStatement.setObject(2, entity.getLogin());
             prepareStatement.setObject(3, entity.getPassword());
 

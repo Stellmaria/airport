@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.airport.Airplane;
+import com.academy.airport.entity.Airplane;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,7 +20,6 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class AirplaneDao implements Dao<Integer, Airplane> {
     private static final AirplaneDao INSTANCE = new AirplaneDao();
-    private static final AircompanyDao aircompanyDao = AircompanyDao.getInstance();
     @Language("PostgreSQL")
     private static final String DELETE_SQL = """
             DELETE
@@ -51,7 +50,7 @@ public class AirplaneDao implements Dao<Integer, Airplane> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
             prepareStatement.setObject(1, entity.getModel());
-            prepareStatement.setObject(2, entity.getAircompany().getId());
+            prepareStatement.setObject(2, entity.getAircompanyId());
             prepareStatement.executeUpdate();
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -67,7 +66,7 @@ public class AirplaneDao implements Dao<Integer, Airplane> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
             prepareStatement.setObject(1, entity.getModel());
-            prepareStatement.setObject(2, entity.getAircompany().getId());
+            prepareStatement.setObject(2, entity.getAircompanyId());
             prepareStatement.setObject(3, entity.getId());
             prepareStatement.executeUpdate();
         }
@@ -122,10 +121,7 @@ public class AirplaneDao implements Dao<Integer, Airplane> {
         return Airplane.builder()
                 .id(resultSet.getObject("id", Integer.class))
                 .model(resultSet.getObject("model", String.class))
-                .aircompany(aircompanyDao.findById(
-                                resultSet.getObject("aircompany_id", Integer.class),
-                                resultSet.getStatement().getConnection())
-                        .orElse(null))
+                .aircompanyId(resultSet.getObject("aircompany_id", Integer.class))
                 .build();
     }
 

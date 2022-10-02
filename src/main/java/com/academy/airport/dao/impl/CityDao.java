@@ -1,8 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.route.City;
-import com.academy.airport.entity.route.Country;
+import com.academy.airport.entity.City;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -43,7 +42,7 @@ public class CityDao implements Dao<Integer, City> {
     public City save(final @NotNull City entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
-            prepareStatement.setObject(1, entity.getCountry().getId());
+            prepareStatement.setObject(1, entity.getCountryId());
             prepareStatement.setObject(2, entity.getName());
 
             prepareStatement.executeUpdate();
@@ -61,7 +60,7 @@ public class CityDao implements Dao<Integer, City> {
     public void update(final @NotNull City entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
-            prepareStatement.setObject(1, entity.getCountry().getId());
+            prepareStatement.setObject(1, entity.getCountryId());
             prepareStatement.setObject(2, entity.getName());
             prepareStatement.setObject(3, entity.getId());
 
@@ -123,9 +122,7 @@ public class CityDao implements Dao<Integer, City> {
     private City buildCity(@NotNull ResultSet resultSet) {
         return City.builder()
                 .id(resultSet.getObject("id", Integer.class))
-                .country(Country.builder()
-                        .id(resultSet.getObject("country_id", Integer.class))
-                        .build())
+                .countryId(resultSet.getObject("country_id", Integer.class))
                 .name(resultSet.getObject("name", String.class))
                 .build();
     }

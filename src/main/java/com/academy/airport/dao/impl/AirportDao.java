@@ -1,7 +1,7 @@
 package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
-import com.academy.airport.entity.airport.Airport;
+import com.academy.airport.entity.Airport;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,7 +20,6 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class AirportDao implements Dao<String, Airport> {
     private static final AirportDao INSTANCE = new AirportDao();
-    private static final CityDao cityDao = CityDao.getInstance();
     @Language("PostgreSQL")
     private static final String DELETE_SQL = """
             DELETE
@@ -49,7 +48,7 @@ public class AirportDao implements Dao<String, Airport> {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS)) {
             prepareStatement.setObject(1, entity.getCode().toUpperCase());
-            prepareStatement.setObject(2, entity.getCity().getId());
+            prepareStatement.setObject(2, entity.getCityId());
             prepareStatement.executeUpdate();
             var generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -64,7 +63,7 @@ public class AirportDao implements Dao<String, Airport> {
     public void update(final @NotNull Airport entity) {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
-            prepareStatement.setObject(1, entity.getCity().getId());
+            prepareStatement.setObject(1, entity.getCityId());
             prepareStatement.setObject(2, entity.getCode());
             prepareStatement.executeUpdate();
         }
@@ -118,10 +117,7 @@ public class AirportDao implements Dao<String, Airport> {
     private Airport buildAirport(@NotNull ResultSet resultSet) {
         return Airport.builder()
                 .code(resultSet.getObject("code", String.class))
-                .city(cityDao.findById(
-                                resultSet.getObject("city_id", Integer.class),
-                                resultSet.getStatement().getConnection())
-                        .orElse(null))
+                .cityId(resultSet.getObject("city_id", Integer.class))
                 .build();
     }
 
