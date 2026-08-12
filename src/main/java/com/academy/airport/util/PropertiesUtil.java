@@ -15,6 +15,11 @@ public class PropertiesUtil {
     }
 
     public static String get(final String key) {
+        var environmentKey = key.toUpperCase().replace('.', '_');
+        var environmentValue = System.getenv(environmentKey);
+        if (environmentValue != null && !environmentValue.isBlank()) {
+            return environmentValue;
+        }
         return PROPERTIES.getProperty(key);
     }
 
