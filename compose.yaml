@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: airport_repository
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - airport-postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/db/airport.sql:/docker-entrypoint-initdb.d/01-airport.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d airport_repository"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  airport-postgres-data:

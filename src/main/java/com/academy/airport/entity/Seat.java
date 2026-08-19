@@ -2,8 +2,6 @@ package com.academy.airport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -20,15 +18,15 @@ import lombok.NoArgsConstructor;
 @Data
 @IdClass(SeatPk.class)
 public class Seat {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "airplane_id", nullable = false)
     private Integer airplaneId;
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Id
     @Column(name = "seat_no", nullable = false, length = 4)
     private String seatNo;
+
     @ManyToOne
-    @JoinColumn(name = "airplane_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "airplane_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private Airplane airplaneByAirplaneId;
 }

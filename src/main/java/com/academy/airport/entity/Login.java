@@ -23,16 +23,20 @@ public class Login {
     @Id
     @Column(name = "id", nullable = false)
     private Integer id;
+
     @Basic
     @Column(name = "user_id", nullable = false)
     private Integer userId;
+
     @Basic
     @Column(name = "login", nullable = false, length = 128)
     private String login;
+
     @Basic
-    @Column(name = "password", nullable = false, length = 32)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
+
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private User userByUserId;
 }

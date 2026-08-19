@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,12 +19,13 @@ public class ConnectionManager {
     private static final String USERNAME_KEY = "db.username";
     private static final String PASSWORD_KEY = "db.password";
     private static final String POOL_SIZE_KEY = "db.pool.size";
-    private static final Integer DEFAULT_POOL_SIZE = 10;
+    private static final int DEFAULT_POOL_SIZE = 5;
+
     private static BlockingQueue<Connection> pool;
-    private static List<Connection> sourceConnection;
+    private static List<Connection> sourceConnections;
 
     static {
-        initConnectionPoll();
+        initConnectionPool();
     }
 
     @SneakyThrows
@@ -33,36 +35,52 @@ public class ConnectionManager {
 
     @SneakyThrows
     public static void close() {
-        for (Connection connection : sourceConnection) {
-            connection.close();
+        for (Connection connection : sourceConnections) {
+            if (!connection.isClosed()) {
+                connection.close();
+            }
         }
+        pool.clear();
     }
 
-    private static void initConnectionPoll() {
+    private static void initConnectionPool() {
         var poolSize = PropertiesUtil.get(POOL_SIZE_KEY);
-        var size = poolSize == null ? DEFAULT_POOL_SIZE : Integer.parseInt(poolSize);
+        var size = poolSize == null || poolSize.isBlank()
+                ? DEFAULT_POOL_SIZE
+                : Integer.parseInt(poolSize);
+        if (size <= 0) {
+            throw new IllegalArgumentException("db.pool.size must be greater than zero");
+        }
 
         pool = new ArrayBlockingQueue<>(size);
-        sourceConnection = new ArrayList<>(size);
+        sourceConnections = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
-            var connection = open();
-            var proxyConnection = (Connection)
-                    Proxy.newProxyInstance(ConnectionManager.class.getClassLoader(),
-                            new Class[]{Connection.class},
-                            (proxy, method, args) -> "close".equals(method.getName())
-                                    ? pool.add(connection)
-                                    : method.invoke(connection, args));
+            var sourceConnection = open();
+            Connection proxyConnection = (Connection) Proxy.newProxyInstance(
+                    ConnectionManager.class.getClassLoader(),
+                    new Class[]{Connection.class},
+                    (proxy, method, args) -> {
+                        if ("close".equals(method.getName())) {
+                            pool.offer((Connection) proxy);
+                            return null;
+                        }
+                        try {
+                            return method.invoke(sourceConnection, args);
+                        } catch (InvocationTargetException exception) {
+                            throw exception.getCause();
+                        }
+                    });
             pool.add(proxyConnection);
-            sourceConnection.add(connection);
+            sourceConnections.add(sourceConnection);
         }
     }
 
     @SneakyThrows
     private static Connection open() {
         return DriverManager.getConnection(
-                PropertiesUtil.get(URL_KEY),
-                PropertiesUtil.get(USERNAME_KEY),
-                PropertiesUtil.get(PASSWORD_KEY));
+                PropertiesUtil.require(URL_KEY),
+                PropertiesUtil.require(USERNAME_KEY),
+                PropertiesUtil.require(PASSWORD_KEY));
     }
 }
