@@ -61,4 +61,6 @@ jobs:
           -f src/main/resources/db/airport.sql
 
       - name: Build and test
-        run: ./mvnw -B clean verify
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean verify
