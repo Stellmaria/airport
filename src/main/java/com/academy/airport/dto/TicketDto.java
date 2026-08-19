@@ -7,13 +7,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * A DTO for the {@link Ticket} entity
+ * A DTO for the {@link Ticket} entity.
  */
 @Data
 public class TicketDto implements Serializable {
     private final Long id;
     private final Integer userId;
-    private final Integer routeId;
+    private final Long routeId;
     private final String seatNo;
     private final BigDecimal cost;
     private final UserDto userByUserId;
