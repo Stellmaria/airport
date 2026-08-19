@@ -2,6 +2,7 @@ package com.academy.airport.dao.impl;
 
 import com.academy.airport.dao.Dao;
 import com.academy.airport.entity.Seat;
+import com.academy.airport.entity.SeatPk;
 import com.academy.airport.util.ConnectionManager;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,109 +15,54 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
-public class SeatDao implements Dao<Integer, Seat> {
+public class SeatDao implements Dao<SeatPk, Seat> {
     private static final SeatDao INSTANCE = new SeatDao();
+
     @Language("PostgreSQL")
-    private static final String DELETE_SQL = """
-            DELETE
-            FROM airport_storage.seat
-            WHERE airplane_id = ?;""";
+    private static final String DELETE_SQL = "DELETE FROM airport_storage.seat WHERE airplane_id = ? AND seat_no = ?;";
     @Language("PostgreSQL")
-    private static final String SAVE_SQL = """
-            INSERT INTO airport_storage.seat(airplane_id, seat_no)
-            VALUES (?, ?);""";
+    private static final String SAVE_SQL = "INSERT INTO airport_storage.seat(airplane_id, seat_no) VALUES (?, ?);";
     @Language("PostgreSQL")
-    private static final String INIT_SQL = """
-            INSERT INTO airport_storage.seat (airplane_id, seat_no)
-            SELECT id,
-                   s.column1
-            FROM airport_storage.airplane
-                     CROSS JOIN (VALUES ('A1'), ('A2'), ('B1'), ('B2'), ('C1'), ('C2'), ('D1'), ('D2') ORDER BY 1) s
-            WHERE aircompany_id = ?;""";
+    private static final String FIND_ALL_SQL = "SELECT airplane_id, seat_no FROM airport_storage.seat";
     @Language("PostgreSQL")
-    private static final String COUNT_SQL = """
-            SELECT count(seat_no)
-            FROM airport_storage.seat
-            WHERE airplane_id = ?;""";
+    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE airplane_id = ? AND seat_no = ?;";
     @Language("PostgreSQL")
-    private static final String UPDATE_SQL = """
-            UPDATE airport_storage.seat
-            SET seat_no = ?
-            WHERE airplane_id = ?;""";
-    @Language("PostgreSQL")
-    private static final String FIND_ALL_SQL = """
-            SELECT airplane_id,
-                   seat_no
-            FROM airport_storage.seat""";
-    @Language("PostgreSQL")
-    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + " WHERE airplane_id = ?;";
+    private static final String FIND_BY_AIRPLANE_SQL = FIND_ALL_SQL + " WHERE airplane_id = ? ORDER BY seat_no;";
 
     @Override
     @SneakyThrows
     public Seat save(final @NotNull Seat entity) {
         try (var connection = ConnectionManager.get();
-             var savePrepareStatement = connection.prepareStatement(SAVE_SQL, RETURN_GENERATED_KEYS);
-             var countPrepareStatement = connection.prepareStatement(COUNT_SQL);
-             var initPrepareStatement = connection.prepareStatement(INIT_SQL)) {
-            String columLabel = "seat_no";
-            countPrepareStatement.setObject(1, entity.getAirplaneId());
-            var resultSet = countPrepareStatement.executeQuery();
-            if (resultSet.next() || resultSet.getInt(columLabel) == 0) {
-                initPrepareStatement.setObject(1, entity.getAirplaneId());
-                initPrepareStatement.executeUpdate();
-            }
-            savePrepareStatement.setObject(1, entity.getAirplaneId());
-            savePrepareStatement.setObject(2, entity.getSeatNo());
-            savePrepareStatement.executeUpdate();
-            var generatedKeys = savePrepareStatement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                entity.setSeatNo(generatedKeys.getObject(columLabel, String.class));
-            }
+             var statement = connection.prepareStatement(SAVE_SQL)) {
+            statement.setObject(1, entity.getAirplaneId());
+            statement.setString(2, entity.getSeatNo());
+            statement.executeUpdate();
             return entity;
         }
     }
 
     @Override
-    @SneakyThrows
     public void update(final @NotNull Seat entity) {
+        throw new UnsupportedOperationException(
+                "Seat has no mutable columns; delete the old composite key and save a new seat instead");
+    }
+
+    @Override
+    @SneakyThrows
+    public boolean delete(final SeatPk id) {
         try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(UPDATE_SQL)) {
-            prepareStatement.setObject(1, entity.getAirplaneId());
-            prepareStatement.executeUpdate();
+             var statement = connection.prepareStatement(DELETE_SQL)) {
+            bindKey(statement, id);
+            return statement.executeUpdate() > 0;
         }
     }
 
     @Override
     @SneakyThrows
-    public boolean delete(final Integer id) {
-        try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(DELETE_SQL)) {
-            prepareStatement.setObject(1, id);
-            return prepareStatement.executeUpdate() > 0;
-        }
-    }
-
-    @Override
-    @SneakyThrows
-    public Optional<Seat> findById(Integer id, Connection connection) {
-        try (var prepareStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-            prepareStatement.setObject(1, id);
-            var resultSet = prepareStatement.executeQuery();
-            Seat seat = null;
-            if (resultSet.next()) {
-                seat = buildSeat(resultSet);
-            }
-            return Optional.ofNullable(seat);
-        }
-    }
-
-    @Override
-    @SneakyThrows
-    public Optional<Seat> findById(final Integer id) {
+    public Optional<Seat> findById(final SeatPk id) {
         try (var connection = ConnectionManager.get()) {
             return findById(id, connection);
         }
@@ -124,27 +70,63 @@ public class SeatDao implements Dao<Integer, Seat> {
 
     @Override
     @SneakyThrows
+    public Optional<Seat> findById(final SeatPk id, final Connection connection) {
+        try (var statement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+            bindKey(statement, id);
+            try (var resultSet = statement.executeQuery()) {
+                return resultSet.next() ? Optional.of(buildSeat(resultSet)) : Optional.empty();
+            }
+        }
+    }
+
+    @Override
+    @SneakyThrows
     public List<Seat> findAll() {
         try (var connection = ConnectionManager.get();
-             var prepareStatement = connection.prepareStatement(FIND_ALL_SQL)) {
-            var resultSet = prepareStatement.executeQuery();
-            List<Seat> seatList = new ArrayList<>();
-            while (resultSet.next()) {
-                seatList.add(buildSeat(resultSet));
-            }
-            return seatList;
+             var statement = connection.prepareStatement(FIND_ALL_SQL);
+             var resultSet = statement.executeQuery()) {
+            return readSeats(resultSet);
         }
+    }
+
+    @SneakyThrows
+    public List<Seat> findAllByAirplaneId(final Integer airplaneId) {
+        try (var connection = ConnectionManager.get();
+             var statement = connection.prepareStatement(FIND_BY_AIRPLANE_SQL)) {
+            statement.setObject(1, airplaneId);
+            try (var resultSet = statement.executeQuery()) {
+                return readSeats(resultSet);
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void bindKey(final java.sql.PreparedStatement statement, final SeatPk id) {
+        if (id == null || id.getAirplaneId() == null || id.getSeatNo() == null) {
+            throw new IllegalArgumentException("Seat key must contain airplaneId and seatNo");
+        }
+        statement.setObject(1, id.getAirplaneId());
+        statement.setString(2, id.getSeatNo());
+    }
+
+    @SneakyThrows
+    private List<Seat> readSeats(final ResultSet resultSet) {
+        List<Seat> seats = new ArrayList<>();
+        while (resultSet.next()) {
+            seats.add(buildSeat(resultSet));
+        }
+        return seats;
+    }
+
+    @SneakyThrows
+    private Seat buildSeat(final ResultSet resultSet) {
+        return Seat.builder()
+                .airplaneId(resultSet.getObject("airplane_id", Integer.class))
+                .seatNo(resultSet.getString("seat_no"))
+                .build();
     }
 
     public static SeatDao getInstance() {
         return INSTANCE;
-    }
-
-    @SneakyThrows
-    private Seat buildSeat(@NotNull ResultSet resultSet) {
-        return Seat.builder()
-                .airplaneId(resultSet.getObject("airplane_id", Integer.class))
-                .seatNo(resultSet.getObject("seat_no", String.class))
-                .build();
     }
 }
