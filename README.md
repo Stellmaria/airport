@@ -91,8 +91,16 @@ The bootstrap script is intended for a fresh educational database. It is safe to
 
 ## Build
 
+On Bash/macOS/Linux, invoke the tracked wrapper through Bash so the build also works when the checkout does not preserve its executable bit:
+
 ```bash
-./mvnw clean verify
+bash mvnw clean verify
+```
+
+On Windows:
+
+```powershell
+.\mvnw.cmd clean verify
 ```
 
 The PostgreSQL integration test is enabled when `DB_URL` is present in the environment. This keeps a plain compilation/test run usable when no local database is running while ensuring CI exercises the real database.
@@ -132,10 +140,4 @@ The included login seed stores a BCrypt-formatted hash, not a plaintext password
 
 ## CI
 
-`.github/workflows/ci.yml` starts PostgreSQL 15, applies `airport.sql`, then runs:
-
-```bash
-./mvnw -B clean verify
-```
-
-The existing `Secret Scan` workflow remains enabled as an additional check for accidentally committed credentials.
+`.github/workflows/ci.yml` starts PostgreSQL 15, applies `airport.sql`, then runs the Maven Wrapper build. The existing `Secret Scan` workflow remains enabled as an additional check for accidentally committed credentials.
