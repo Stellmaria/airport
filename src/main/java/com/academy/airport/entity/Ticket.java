@@ -25,22 +25,28 @@ public class Ticket {
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
+
     @Basic
     @Column(name = "user_id", nullable = false)
     private Integer userId;
+
     @Basic
     @Column(name = "route_id", nullable = false)
-    private Integer routeId;
+    private Long routeId;
+
     @Basic
     @Column(name = "seat_no", nullable = false, length = 4)
     private String seatNo;
+
     @Basic
-    @Column(name = "cost", precision = 2)
+    @Column(name = "cost", nullable = false, precision = 8, scale = 2)
     private BigDecimal cost;
+
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private User userByUserId;
+
     @ManyToOne
-    @JoinColumn(name = "route_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "route_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private Route routeByRouteId;
 }
